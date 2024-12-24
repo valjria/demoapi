@@ -9,7 +9,7 @@ using demoapi.Data;
 
 namespace demoapi.Migrations
 {
-    [DbContext(typeof(EducationDbContext))]
+    [DbContext(typeof(AppDbContext))]
     partial class EducationDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

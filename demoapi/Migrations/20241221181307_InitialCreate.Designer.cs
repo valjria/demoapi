@@ -9,7 +9,7 @@ using demoapi.Data;
 
 namespace demoapi.Migrations
 {
-    [DbContext(typeof(EducationDbContext))]
+    [DbContext(typeof(AppDbContext))]
     [Migration("20241221181307_InitialCreate")]
     partial class InitialCreate
     {

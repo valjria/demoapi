@@ -14,7 +14,7 @@ builder.Services.AddControllers();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly()); // MappingProfiles için otomatik tarama
 
 // DbContext Entegrasyonu
-builder.Services.AddDbContext<EducationDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // CORS Politikasý

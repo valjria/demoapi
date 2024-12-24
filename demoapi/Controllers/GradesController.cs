@@ -9,10 +9,10 @@ using AutoMapper;
 [Route("api/[controller]")]
 public class GradesController : ControllerBase
 {
-    private readonly EducationDbContext _context;
+    private readonly AppDbContext _context;
     private readonly IMapper _mapper;
 
-    public GradesController(EducationDbContext context, IMapper mapper)
+    public GradesController(AppDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;
@@ -38,7 +38,7 @@ public class GradesController : ControllerBase
     {
         if (gradeDto == null)
         {
-            return BadRequest("Not bilgileri eksik.");
+            return BadRequest("Grade details missing.");
         }
 
         // DTO'dan Grade modeline mapleme
@@ -50,7 +50,7 @@ public class GradesController : ControllerBase
 
         if (student == null || course == null)
         {
-            return BadRequest("Geçersiz öğrenci veya ders.");
+            return BadRequest("Invalid Student or Course.");
         }
 
         // StudentName ve CourseName'i doldur

@@ -9,10 +9,10 @@ using AutoMapper;
 [Route("api/[controller]")]
 public class StudentsController : ControllerBase
 {
-    private readonly EducationDbContext _context;
+    private readonly AppDbContext _context;
     private readonly IMapper _mapper;
 
-    public StudentsController(EducationDbContext context, IMapper mapper)
+    public StudentsController(AppDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;

@@ -8,27 +8,28 @@ namespace demoapi.MappingProfiles
     {
         public MappingProfiles()
         {
-            // Mapping for Course
+            //Course mapping
             CreateMap<Course, CourseDto>()
                 .ForMember(dest => dest.Topics, opt => opt.MapFrom(src => src.Topics));
 
             CreateMap<CourseDto, Course>();
 
-            // Mapping for Topic
+            //Topic mapping
             CreateMap<Topic, TopicDto>();
             CreateMap<TopicDto, Topic>();
 
-            // Mapping for Student
+            //Student mapping
             CreateMap<Student, StudentDto>();
             CreateMap<StudentDto, Student>();
 
-            // Mapping for Grade
+            //Grade mapping
             CreateMap<Grade, GradeDto>()
                 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Name))
                 .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.CourseName));
 
             CreateMap<GradeDto, Grade>();
 
+            //Report mapping
             CreateMap<Grade, ReportDto>()
                 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Name))
                 .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.CourseName))

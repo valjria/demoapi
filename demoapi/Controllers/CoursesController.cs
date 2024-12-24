@@ -8,9 +8,9 @@ using Microsoft.EntityFrameworkCore;
 [Route("api/[controller]")]
 public class CoursesController : ControllerBase
 {
-    private readonly EducationDbContext _context;
+    private readonly AppDbContext _context;
 
-    public CoursesController(EducationDbContext context)
+    public CoursesController(AppDbContext context)
     {
         _context = context;
     }

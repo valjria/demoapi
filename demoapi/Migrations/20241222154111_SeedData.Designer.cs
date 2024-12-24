@@ -10,7 +10,7 @@ using demoapi.Data;
 
 namespace demoapi.Migrations
 {
-    [DbContext(typeof(EducationDbContext))]
+    [DbContext(typeof(AppDbContext))]
     [Migration("20241222154111_SeedData")]
     partial class SeedData
     {
