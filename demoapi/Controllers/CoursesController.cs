@@ -2,55 +2,57 @@ using AutoMapper;
 using demoapi.Data;
 using demoapi.DTO;
 using demoapi.Models;
+using demoapi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
+
 
 [ApiController]
 [Route("api/[controller]")]
 public class CoursesController : ControllerBase
 {
-    private readonly AppDbContext _context;
-    private readonly IMapper _mapper;
+    private readonly ICourseService _courseService;
 
-    public CoursesController(AppDbContext context, IMapper mapper)
+    public CoursesController(ICourseService courseService)
     {
-        _context = context;
-        _mapper = mapper;
+        _courseService = courseService;
     }
 
-    // GET: api/courses
     [HttpGet]
     public async Task<IActionResult> GetCourses()
     {
-        // Courses ile Topics iliþkisini de dahil ederek getiriyoruz
-        var courses = await _context.Courses
-            .Include(c => c.Topics)
-            .ToListAsync();
-
-        // AutoMapper kullanarak DTO'ya dönüþtürme
-        var courseDtos = _mapper.Map<List<CourseDto>>(courses);
-
-        return Ok(courseDtos);
+        var courses = await _courseService.GetAllCoursesAsync();
+        return Ok(courses);
     }
 
-    // POST: api/courses
-    [HttpPost]
-    public async Task<IActionResult> CreateCourse([FromBody] CourseDto courseDto)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetCourse(int id)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState); // Model doðrulama hatalarýný döner
-        }
+        var course = await _courseService.GetCourseByIdAsync(id);
+        if (course == null)
+            return NotFound();
 
-        // DTO'dan Model'e dönüþüm
-        var course = _mapper.Map<Course>(courseDto);
+        return Ok(course);
+    }
 
-        _context.Courses.Add(course);
-        await _context.SaveChangesAsync();
+    [HttpPost]
+    public async Task<IActionResult> AddCourse([FromBody] CourseDto courseDto)
+    {
+        if (courseDto == null)
+            return BadRequest("Kurs bilgileri eksik.");
 
-        // Kaydedilen Course'yi tekrar DTO'ya dönüþtürerek döndürüyoruz
-        var createdCourseDto = _mapper.Map<CourseDto>(course);
+        var addedCourse = await _courseService.AddCourseAsync(courseDto);
+        return CreatedAtAction(nameof(GetCourse), new { id = addedCourse.CourseId }, addedCourse);
+    }
 
-        return CreatedAtAction(nameof(GetCourses), new { id = course.CourseId }, createdCourseDto);
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteCourse(int id)
+    {
+        var isDeleted = await _courseService.DeleteCourseAsync(id);
+        if (!isDeleted)
+            return NotFound();
+
+        return NoContent();
     }
 }

@@ -4,51 +4,57 @@ using demoapi.Data;
 using demoapi.Models;
 using demoapi.DTO;
 using AutoMapper;
+using demoapi.Services.Interfaces;
 
-[ApiController]
-[Route("api/courses/{courseId}/[controller]")]
-public class TopicsController : ControllerBase
+namespace demoapi.Controllers
 {
-    private readonly AppDbContext _context;
-    private readonly IMapper _mapper;
-
-    public TopicsController(AppDbContext context, IMapper mapper)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TopicsController : ControllerBase
     {
-        _context = context;
-        _mapper = mapper;
-    }
+        private readonly ITopicService _topicService;
 
-    [HttpGet]
-    public async Task<IActionResult> GetTopics(int courseId)
-    {
-        var topics = await _context.Topics
-            .Where(t => t.CourseId == courseId)
-            .ToListAsync();
-
-        // Topics listesini DTO'ya mapliyoruz
-        var topicDtos = _mapper.Map<List<TopicDto>>(topics);
-
-        return Ok(topicDtos);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> CreateTopic(int courseId, [FromBody] TopicDto topicDto)
-    {
-        if (topicDto == null)
+        public TopicsController(ITopicService topicService)
         {
-            return BadRequest("Konu bilgileri eksik.");
+            _topicService = topicService;
         }
 
-        // DTO'dan modele dönüşüm
-        var topic = _mapper.Map<Topic>(topicDto);
-        topic.CourseId = courseId;
+        [HttpGet]
+        public async Task<IActionResult> GetTopics()
+        {
+            var topics = await _topicService.GetAllTopicsAsync();
+            return Ok(topics);
+        }
 
-        _context.Topics.Add(topic);
-        await _context.SaveChangesAsync();
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetTopic(int id)
+        {
+            var topic = await _topicService.GetTopicByIdAsync(id);
+            if (topic == null)
+                return NotFound();
 
-        // Eklenen konuyu DTO'ya mapleyerek döndür
-        var createdTopicDto = _mapper.Map<TopicDto>(topic);
+            return Ok(topic);
+        }
 
-        return CreatedAtAction(nameof(GetTopics), new { courseId = courseId }, createdTopicDto);
+        [HttpPost]
+        public async Task<IActionResult> AddTopic([FromBody] TopicDto topicDto)
+        {
+            if (topicDto == null)
+                return BadRequest("Konu bilgileri eksik.");
+
+            var addedTopic = await _topicService.AddTopicAsync(topicDto);
+            return CreatedAtAction(nameof(GetTopic), new { id = addedTopic.TopicId }, addedTopic);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTopic(int id)
+        {
+            var isDeleted = await _topicService.DeleteTopicAsync(id);
+            if (!isDeleted)
+                return NotFound();
+
+            return NoContent();
+        }
     }
 }
+

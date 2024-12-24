@@ -1,34 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using demoapi.Data;
-using demoapi.DTO;
-using AutoMapper;
+﻿using demoapi.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
-[ApiController]
-[Route("api/[controller]")]
-public class ReportsController : ControllerBase
+namespace demoapi.Controllers
 {
-    private readonly AppDbContext _context;
-    private readonly IMapper _mapper;
-
-    public ReportsController(AppDbContext context, IMapper mapper)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ReportsController : ControllerBase
     {
-        _context = context;
-        _mapper = mapper;
-    }
+        private readonly IReportService _reportService;
 
+        public ReportsController(IReportService reportService)
+        {
+            _reportService = reportService;
+        }
 
-    [HttpGet]
-    public async Task<IActionResult> GetStudentReport()
-    {
-        var grades = await _context.Grades
-            .Include(g => g.Student)
-            .Include(g => g.Course)
-            .ToListAsync();
-
-        // Grade listesini StudentReportDto'ya maple
-        var reportDtos = _mapper.Map<List<ReportDto>>(grades);
-
-        return Ok(reportDtos);
+        [HttpGet]
+        public async Task<IActionResult> GetReports()
+        {
+            var reports = await _reportService.GetAllReportsAsync();
+            return Ok(reports);
+        }
     }
 }

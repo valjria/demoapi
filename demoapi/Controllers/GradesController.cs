@@ -4,60 +4,56 @@ using demoapi.Data;
 using demoapi.Models;
 using demoapi.DTO;
 using AutoMapper;
+using demoapi.Services.Interfaces;
 
-[ApiController]
-[Route("api/[controller]")]
-public class GradesController : ControllerBase
+namespace demoapi.Controllers
 {
-    private readonly AppDbContext _context;
-    private readonly IMapper _mapper;
-
-    public GradesController(AppDbContext context, IMapper mapper)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class GradesController : ControllerBase
     {
-        _context = context;
-        _mapper = mapper;
-    }
+        private readonly IGradeService _gradeService;
 
-    // Tüm notları listeleme
-    [HttpGet]
-    public async Task<IActionResult> GetGrades()
-    {
-        var grades = await _context.Grades
-            .Include(g => g.Student) // Öğrenci bilgilerini dahil et
-            .Include(g => g.Course)  // Ders bilgilerini dahil et
-            .ToListAsync();
-
-        // Grade -> GradeDto dönüşümü
-        var gradeDtos = _mapper.Map<List<GradeDto>>(grades);
-        return Ok(gradeDtos); // 200 OK ve GradeDto listesi
-    }
-
-    // Yeni not ekleme
-    [HttpPost]
-    public async Task<IActionResult> AddGrade([FromBody] GradeDto gradeDto)
-    {
-        if (!ModelState.IsValid)
+        public GradesController(IGradeService gradeService)
         {
-            return BadRequest(ModelState); // Model doğrulama hatalarını döndür
+            _gradeService = gradeService;
         }
 
-        // DTO -> Model dönüşümü
-        var grade = _mapper.Map<Grade>(gradeDto);
-
-        // İlişkili verileri kontrol et
-        var student = await _context.Students.FindAsync(grade.StudentId);
-        var course = await _context.Courses.FindAsync(grade.CourseId);
-
-        if (student == null || course == null)
+        [HttpGet]
+        public async Task<IActionResult> GetGrades()
         {
-            return BadRequest("Invalid Student or Course."); // Hatalı öğrenci veya ders
+            var grades = await _gradeService.GetAllGradesAsync();
+            return Ok(grades);
         }
 
-        _context.Grades.Add(grade);
-        await _context.SaveChangesAsync();
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetGrade(int id)
+        {
+            var grade = await _gradeService.GetGradeByIdAsync(id);
+            if (grade == null)
+                return NotFound();
 
-        // Kaydedilen Grade'i DTO'ya çevirip döndür
-        var createdGradeDto = _mapper.Map<GradeDto>(grade);
-        return CreatedAtAction(nameof(GetGrades), new { id = grade.GradeId }, createdGradeDto); // 201 Created
+            return Ok(grade);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddGrade([FromBody] GradeDto gradeDto)
+        {
+            if (gradeDto == null)
+                return BadRequest("Not bilgileri eksik.");
+
+            var addedGrade = await _gradeService.AddGradeAsync(gradeDto);
+            return CreatedAtAction(nameof(GetGrade), new { id = addedGrade.GradeId }, addedGrade);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteGrade(int id)
+        {
+            var isDeleted = await _gradeService.DeleteGradeAsync(id);
+            if (!isDeleted)
+                return NotFound();
+
+            return NoContent();
+        }
     }
 }

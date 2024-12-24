@@ -4,50 +4,50 @@ using demoapi.Data;
 using demoapi.Models;
 using demoapi.DTO;
 using AutoMapper;
+using demoapi.Services.Interfaces;
 
 [ApiController]
 [Route("api/[controller]")]
 public class StudentsController : ControllerBase
 {
-    private readonly AppDbContext _context;
-    private readonly IMapper _mapper;
+    private readonly IStudentService _studentService;
 
-    public StudentsController(AppDbContext context, IMapper mapper)
+    public StudentsController(IStudentService studentService)
     {
-        _context = context;
-        _mapper = mapper;
+        _studentService = studentService;
     }
 
-    // Tüm öğrencileri listeleme
     [HttpGet]
     public async Task<IActionResult> GetStudents()
     {
-        var students = await _context.Students.ToListAsync();
-
-        // Öğrenci listesini DTO'ya mapliyoruz
-        var studentDtos = _mapper.Map<List<StudentDto>>(students);
-
-        return Ok(studentDtos);
+        var students = await _studentService.GetAllStudentsAsync();
+        return Ok(students);
     }
 
-    // Yeni öğrenci ekleme
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetStudent(int id)
+    {
+        var student = await _studentService.GetStudentByIdAsync(id);
+        if (student == null)
+            return NotFound();
+
+        return Ok(student);
+    }
+
     [HttpPost]
     public async Task<IActionResult> AddStudent([FromBody] StudentDto studentDto)
     {
-        if (studentDto == null)
-        {
-            return BadRequest("Öğrenci bilgileri eksik.");
-        }
+        var addedStudent = await _studentService.AddStudentAsync(studentDto);
+        return CreatedAtAction(nameof(GetStudent), new { id = addedStudent.StudentId }, addedStudent);
+    }
 
-        // DTO'dan modele dönüşüm
-        var student = _mapper.Map<Student>(studentDto);
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteStudent(int id)
+    {
+        var isDeleted = await _studentService.DeleteStudentAsync(id);
+        if (!isDeleted)
+            return NotFound();
 
-        _context.Students.Add(student);
-        await _context.SaveChangesAsync();
-
-        // Eklenen öğrenciyi DTO olarak döndür
-        var createdStudentDto = _mapper.Map<StudentDto>(student);
-
-        return CreatedAtAction(nameof(GetStudents), new { id = student.StudentId }, createdStudentDto);
+        return NoContent();
     }
 }
