@@ -12,7 +12,8 @@ namespace demoapi.MappingProfiles
             CreateMap<Course, CourseDto>()
                 .ForMember(dest => dest.Topics, opt => opt.MapFrom(src => src.Topics));
 
-            CreateMap<CourseDto, Course>();
+            CreateMap<CourseDto, Course>()
+             .ForMember(dest => dest.Topics, opt => opt.MapFrom(src => src.Topics));
 
             //Topic mapping
             CreateMap<Topic, TopicDto>();
@@ -34,7 +35,8 @@ namespace demoapi.MappingProfiles
                 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Name))
                 .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.CourseName))
                 .ForMember(dest => dest.Grade, opt => opt.MapFrom(src => src.Value));
-
         }
+
     }
-}
+    }
+

@@ -23,45 +23,41 @@ public class GradesController : ControllerBase
     public async Task<IActionResult> GetGrades()
     {
         var grades = await _context.Grades
-            .Include(g => g.Student)
-            .Include(g => g.Course)
+            .Include(g => g.Student) // Öğrenci bilgilerini dahil et
+            .Include(g => g.Course)  // Ders bilgilerini dahil et
             .ToListAsync();
 
-        // Grade listesi DTO'ya mapleniyor
+        // Grade -> GradeDto dönüşümü
         var gradeDtos = _mapper.Map<List<GradeDto>>(grades);
-        return Ok(gradeDtos);
+        return Ok(gradeDtos); // 200 OK ve GradeDto listesi
     }
 
     // Yeni not ekleme
     [HttpPost]
     public async Task<IActionResult> AddGrade([FromBody] GradeDto gradeDto)
     {
-        if (gradeDto == null)
+        if (!ModelState.IsValid)
         {
-            return BadRequest("Grade details missing.");
+            return BadRequest(ModelState); // Model doğrulama hatalarını döndür
         }
 
-        // DTO'dan Grade modeline mapleme
+        // DTO -> Model dönüşümü
         var grade = _mapper.Map<Grade>(gradeDto);
 
-        // Doğru öğrenci ve ders var mı kontrol et
+        // İlişkili verileri kontrol et
         var student = await _context.Students.FindAsync(grade.StudentId);
         var course = await _context.Courses.FindAsync(grade.CourseId);
 
         if (student == null || course == null)
         {
-            return BadRequest("Invalid Student or Course.");
+            return BadRequest("Invalid Student or Course."); // Hatalı öğrenci veya ders
         }
-
-        // StudentName ve CourseName'i doldur
-        gradeDto.StudentName = student.Name;
-        gradeDto.CourseName = course.CourseName;
 
         _context.Grades.Add(grade);
         await _context.SaveChangesAsync();
 
-        // Oluşturulan Grade'i DTO'ya mapleyip döndürüyoruz
+        // Kaydedilen Grade'i DTO'ya çevirip döndür
         var createdGradeDto = _mapper.Map<GradeDto>(grade);
-        return CreatedAtAction(nameof(GetGrades), new { id = grade.GradeId }, createdGradeDto);
+        return CreatedAtAction(nameof(GetGrades), new { id = grade.GradeId }, createdGradeDto); // 201 Created
     }
 }

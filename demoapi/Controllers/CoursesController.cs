@@ -1,3 +1,4 @@
+using AutoMapper;
 using demoapi.Data;
 using demoapi.DTO;
 using demoapi.Models;
@@ -9,12 +10,15 @@ using Microsoft.EntityFrameworkCore;
 public class CoursesController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IMapper _mapper;
 
-    public CoursesController(AppDbContext context)
+    public CoursesController(AppDbContext context, IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
     }
 
+    // GET: api/courses
     [HttpGet]
     public async Task<IActionResult> GetCourses()
     {
@@ -23,40 +27,30 @@ public class CoursesController : ControllerBase
             .Include(c => c.Topics)
             .ToListAsync();
 
-        return Ok(courses);
+        // AutoMapper kullanarak DTO'ya dönüþtürme
+        var courseDtos = _mapper.Map<List<CourseDto>>(courses);
+
+        return Ok(courseDtos);
     }
 
+    // POST: api/courses
     [HttpPost]
     public async Task<IActionResult> CreateCourse([FromBody] CourseDto courseDto)
     {
-        try
+        if (!ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState); // Model doðrulama hatalarýný döner
-            }
-
-            // DTO'dan Model'e dönüþtürme
-            var course = new Course
-            {
-                CourseName = courseDto.CourseName,
-                Description = courseDto.Description,
-                Topics = courseDto.Topics?.Select(t => new Topic
-                {
-                    TopicName = t.TopicName
-                }).ToList()
-            };
-
-            _context.Courses.Add(course);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetCourses), new { id = course.CourseId }, course);
+            return BadRequest(ModelState); // Model doðrulama hatalarýný döner
         }
-        catch (Exception ex)
-        {
-            // Hatalarý logla
-            Console.WriteLine($"Error: {ex.Message}");
-            return StatusCode(500, "Internal server error");
-        }
+
+        // DTO'dan Model'e dönüþüm
+        var course = _mapper.Map<Course>(courseDto);
+
+        _context.Courses.Add(course);
+        await _context.SaveChangesAsync();
+
+        // Kaydedilen Course'yi tekrar DTO'ya dönüþtürerek döndürüyoruz
+        var createdCourseDto = _mapper.Map<CourseDto>(course);
+
+        return CreatedAtAction(nameof(GetCourses), new { id = course.CourseId }, createdCourseDto);
     }
 }
