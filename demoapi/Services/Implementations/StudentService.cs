@@ -58,4 +58,9 @@ public class StudentService : IStudentService
     {
         return await _studentRepository.DeleteAsync(id);
     }
+
+    public Task<StudentDto> UpdateStudentAsync(StudentDto studentDto)
+    {
+        throw new NotImplementedException();
+    }
 }
