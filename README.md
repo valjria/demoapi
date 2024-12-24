@@ -75,6 +75,4 @@ Havacılık sektöründe kabin ve kokpit personeli için eğitim süreçlerini y
    - Öğrenci başarı durumları için bir endpoint oluştur.  
      - Örnek: **GET** `/api/reports`  
 
---- 
 
-Bu format, proje detaylarının okunabilirliğini artırır ve düzenli bir yapı sağlar.
