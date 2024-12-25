@@ -1,44 +1,63 @@
 ﻿using AutoMapper;
+using demoapi.Data;
 using demoapi.DTO;
 using demoapi.Models;
-using demoapi.Repository.Interfaces;
 using demoapi.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
-namespace demoapi.Services.Implementations
+public class CourseService : ICourseService
 {
-    public class CourseService: ICourseService
+    private readonly AppDbContext _context;
+    private readonly IMapper _mapper;
+
+    public CourseService(AppDbContext context, IMapper mapper)
     {
-        private readonly ICourseRepository _courseRepository;
-        private readonly IMapper _mapper;
+        _context = context;
+        _mapper = mapper;
+    }
 
-        public CourseService(ICourseRepository courseRepository, IMapper mapper)
-        {
-            _courseRepository = courseRepository;
-            _mapper = mapper;
-        }
+    public async Task<IEnumerable<CourseDto>> GetAllCoursesAsync()
+    {
+        var courses = await _context.Courses.ToListAsync();
+        return _mapper.Map<IEnumerable<CourseDto>>(courses); // Model'den DTO'ya dönüşüm
+    }
 
-        public async Task<IEnumerable<CourseDto>> GetAllCoursesAsync()
-        {
-            var courses = await _courseRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<CourseDto>>(courses);
-        }
+    public async Task<CourseDto> GetCourseByIdAsync(int id)
+    {
+        var course = await _context.Courses.FindAsync(id);
+        if (course == null) return null;
 
-        public async Task<CourseDto> GetCourseByIdAsync(int id)
-        {
-            var course = await _courseRepository.GetByIdAsync(id);
-            return course == null ? null : _mapper.Map<CourseDto>(course);
-        }
+        return _mapper.Map<CourseDto>(course); // Model'den DTO'ya dönüşüm
+    }
 
-        public async Task<CourseDto> AddCourseAsync(CourseDto courseDto)
-        {
-            var course = _mapper.Map<Course>(courseDto);
-            var addedCourse = await _courseRepository.AddAsync(course);
-            return _mapper.Map<CourseDto>(addedCourse);
-        }
+    public async Task<CourseDto> AddCourseAsync(CourseDto courseDto)
+    {
+        var course = _mapper.Map<Course>(courseDto); // DTO'dan Model'e dönüşüm
+        _context.Courses.Add(course);
+        await _context.SaveChangesAsync();
 
-        public async Task<bool> DeleteCourseAsync(int id)
-        {
-            return await _courseRepository.DeleteAsync(id);
-        }
+        return _mapper.Map<CourseDto>(course); // Model'den DTO'ya dönüşüm
+    }
+
+    public async Task<bool> DeleteCourseAsync(int id)
+    {
+        var course = await _context.Courses.FindAsync(id);
+        if (course == null) return false;
+
+        _context.Courses.Remove(course);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<CourseDto> UpdateCourseAsync(CourseDto courseDto)
+    {
+        var course = await _context.Courses.FindAsync(courseDto.CourseId);
+        if (course == null) return null;
+
+        // DTO'dan mevcut modele alanları aktar
+        _mapper.Map(courseDto, course);
+
+        await _context.SaveChangesAsync();
+        return _mapper.Map<CourseDto>(course); // Güncellenen Model'den DTO'ya dönüşüm
     }
 }

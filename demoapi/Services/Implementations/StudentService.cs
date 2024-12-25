@@ -1,66 +1,62 @@
-﻿using demoapi.DTO;
+﻿using AutoMapper;
+using demoapi.Data;
+using demoapi.DTO;
 using demoapi.Models;
-using demoapi.Repository.Interfaces;
 using demoapi.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 public class StudentService : IStudentService
 {
-    private readonly IStudentRepository _studentRepository;
+    private readonly AppDbContext _context;
+    private readonly IMapper _mapper;
 
-    public StudentService(IStudentRepository studentRepository)
+    public StudentService(AppDbContext context, IMapper mapper)
     {
-        _studentRepository = studentRepository;
+        _context = context;
+        _mapper = mapper;
     }
 
     public async Task<IEnumerable<StudentDto>> GetAllStudentsAsync()
     {
-        var students = await _studentRepository.GetAllAsync();
-        return students.Select(student => new StudentDto
-        {
-            StudentId = student.StudentId,
-            Name = student.Name,
-            Role = student.Role
-        });
+        var students = await _context.Students.ToListAsync();
+        return _mapper.Map<IEnumerable<StudentDto>>(students); // AutoMapper ile dönüşüm
     }
 
     public async Task<StudentDto> GetStudentByIdAsync(int id)
     {
-        var student = await _studentRepository.GetByIdAsync(id);
+        var student = await _context.Students.FindAsync(id);
         if (student == null) return null;
 
-        return new StudentDto
-        {
-            StudentId = student.StudentId,
-            Name = student.Name,
-            Role = student.Role
-        };
+        return _mapper.Map<StudentDto>(student); // AutoMapper ile dönüşüm
     }
 
     public async Task<StudentDto> AddStudentAsync(StudentDto studentDto)
     {
-        var student = new Student
-        {
-            Name = studentDto.Name,
-            Role = studentDto.Role
-        };
+        var student = _mapper.Map<Student>(studentDto); // DTO'dan Model'e dönüşüm
+        _context.Students.Add(student);
+        await _context.SaveChangesAsync();
 
-        var addedStudent = await _studentRepository.AddAsync(student);
-
-        return new StudentDto
-        {
-            StudentId = addedStudent.StudentId,
-            Name = addedStudent.Name,
-            Role = addedStudent.Role
-        };
+        return _mapper.Map<StudentDto>(student); // Model'den DTO'ya dönüşüm
     }
 
     public async Task<bool> DeleteStudentAsync(int id)
     {
-        return await _studentRepository.DeleteAsync(id);
+        var student = await _context.Students.FindAsync(id);
+        if (student == null) return false;
+
+        _context.Students.Remove(student);
+        await _context.SaveChangesAsync();
+        return true;
     }
 
-    public Task<StudentDto> UpdateStudentAsync(StudentDto studentDto)
+    public async Task<StudentDto> UpdateStudentAsync(StudentDto studentDto)
     {
-        throw new NotImplementedException();
+        var student = await _context.Students.FindAsync(studentDto.StudentId);
+        if (student == null) return null;
+
+        _mapper.Map(studentDto, student); // DTO'dan mevcut Model'e alanları aktar
+
+        await _context.SaveChangesAsync();
+        return _mapper.Map<StudentDto>(student); // Güncellenen Model'den DTO'ya dönüşüm
     }
 }

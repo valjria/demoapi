@@ -7,6 +7,7 @@ namespace demoapi.Services.Interfaces
         Task<IEnumerable<CourseDto>> GetAllCoursesAsync();
         Task<CourseDto> GetCourseByIdAsync(int id);
         Task<CourseDto> AddCourseAsync(CourseDto courseDto);
+        Task<CourseDto> UpdateCourseAsync(CourseDto courseDto);
         Task<bool> DeleteCourseAsync(int id);
     }
 }

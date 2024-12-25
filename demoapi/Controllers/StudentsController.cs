@@ -41,6 +41,21 @@ public class StudentsController : ControllerBase
         return CreatedAtAction(nameof(GetStudent), new { id = addedStudent.StudentId }, addedStudent);
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateStudent(int id, [FromBody] StudentDto studentDto)
+    {
+       /* if (studentDto == null || studentDto.StudentId != id)
+        {
+            return BadRequest("Invalid data or mismatched ID.");
+        } */
+
+        var updatedStudent = await _studentService.UpdateStudentAsync(studentDto);
+
+        if (updatedStudent == null)
+            return NotFound("Student not found.");
+
+        return Ok(updatedStudent);
+    }
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteStudent(int id)
     {

@@ -120,6 +120,10 @@ namespace demoapi.Data
                 .WithOne(g => g.Student)
                 .HasForeignKey(g => g.StudentId);
 
+            modelBuilder.Entity<Topic>()
+                 .HasOne(t => t.Course)
+                 .WithMany(c => c.Topics)
+                 .HasForeignKey(t => t.CourseId);
             // Seed Data
             EducationDbSeeder.Seed(modelBuilder);
         }

@@ -7,6 +7,8 @@ namespace demoapi.Services.Interfaces
         Task<IEnumerable<TopicDto>> GetAllTopicsAsync();
         Task<TopicDto> GetTopicByIdAsync(int id);
         Task<TopicDto> AddTopicAsync(TopicDto topicDto);
+        Task<TopicDto> UpdateTopicAsync(TopicDto topicDto);
+
         Task<bool> DeleteTopicAsync(int id);
     }
 }

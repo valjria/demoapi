@@ -1,12 +1,6 @@
-using AutoMapper;
-using demoapi.Data;
 using demoapi.DTO;
-using demoapi.Models;
 using demoapi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-
 
 [ApiController]
 [Route("api/[controller]")]
@@ -46,12 +40,25 @@ public class CoursesController : ControllerBase
         return CreatedAtAction(nameof(GetCourse), new { id = addedCourse.CourseId }, addedCourse);
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateCourse(int id, [FromBody] CourseDto courseDto)
+    {
+        if (courseDto == null || courseDto.CourseId != id)
+            return BadRequest("Geçersiz veri veya ID eþleþmiyor.");
+
+        var updatedCourse = await _courseService.UpdateCourseAsync(courseDto);
+        if (updatedCourse == null)
+            return NotFound("Kurs bulunamadý.");
+
+        return Ok(updatedCourse);
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCourse(int id)
     {
         var isDeleted = await _courseService.DeleteCourseAsync(id);
         if (!isDeleted)
-            return NotFound();
+            return NotFound("Kurs bulunamadý.");
 
         return NoContent();
     }

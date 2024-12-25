@@ -7,6 +7,7 @@ namespace demoapi.Services.Interfaces
         Task<IEnumerable<GradeDto>> GetAllGradesAsync();
         Task<GradeDto> GetGradeByIdAsync(int id);
         Task<GradeDto> AddGradeAsync(GradeDto gradeDto);
+        Task<GradeDto> UpdateGradeAsync(GradeDto gradeDto);
         Task<bool> DeleteGradeAsync(int id);
     }
 }
