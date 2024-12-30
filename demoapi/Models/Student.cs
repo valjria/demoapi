@@ -8,11 +8,11 @@ namespace demoapi.Models
         [Key]
         public int StudentId { get; set; }
 
-        [Required]
+        //[Required]
         [MaxLength(100)]
         public string Name { get; set; }
 
-        [Required]
+       // [Required]
         [MaxLength(50)]
         public string Role { get; set; } // Kabin/Kokpit
 
