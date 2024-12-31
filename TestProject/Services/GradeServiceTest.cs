@@ -121,7 +121,7 @@ namespace TestProject.Services
             await context.SaveChangesAsync();
             //Execute the service method
             var gradeDto = new GradeDto { GradeId = 1, StudentId = 1, CourseId = 1, Value = 90 };
-            //Assert
+       
             var result = await service.UpdateGradeAsync(gradeDto);
 
             Assert.NotNull(result);
@@ -151,6 +151,69 @@ namespace TestProject.Services
 
             var deletedGrade = await context.Grades.FindAsync(1);
             Assert.Null(deletedGrade);
+
+
         }
+        /* [Fact]
+         public async Task GetAllGradesWithPaginationAsync_ShouldReturnCorrectPage()
+         {
+             using var context = GetInMemoryDbContext();
+             var mapper = GetMapper();
+             var service = new GradeService(context, mapper);
+
+             // Arrange
+             for (int i = 1; i <= 30; i++)
+             {
+                 context.Grades.Add(new Grade
+                 {
+                     Value = i,
+                     StudentId = 1,
+                     CourseId = 1
+                 });
+             }
+             await context.SaveChangesAsync();
+
+             // Act
+             var result = await service.GetAllGradesWithPaginationAsync(2, 10); //Second page, 10 items per page
+
+             // Assert
+             Assert.NotNull(result);
+             Assert.Equal(10, result.Items.Count()); //Page size should be 10
+             Assert.Equal(11, result.Items.First().Value); //First item of page 2
+         } */
+
+        /* [Fact]
+        public async Task FilterGradesAsync_ShouldReturnFilteredGrades()
+        {
+            using var context = GetInMemoryDbContext();
+            var mapper = GetMapper();
+            var service = new GradeService(context, mapper);
+
+            // Arrange
+            context.Students.Add(new Student { StudentId = 1, Name = "John Doe", Role = "Pilot" });
+            context.Students.Add(new Student { StudentId = 2, Name = "Jane Smith", Role = "Engineer" });
+
+            context.Courses.Add(new Course { CourseId = 1, CourseName = "Math 101", Description = "Basic Mathematics" });
+            context.Courses.Add(new Course { CourseId = 2, CourseName = "Physics 101", Description = "Introduction to Physics" });
+
+            context.Grades.AddRange(
+                new Grade { GradeId = 1, Value = 95, StudentId = 1, CourseId = 1 },
+                new Grade { GradeId = 2, Value = 85, StudentId = 2, CourseId = 1 },
+                new Grade { GradeId = 3, Value = 75, StudentId = 1, CourseId = 2 },
+                new Grade { GradeId = 4, Value = 65, StudentId = 2, CourseId = 2 }
+            );
+
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await service.FilterGradesAsync(null, 1, 80, 100); //Filter: courseId=1, minValue=80, maxValue=100
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result); //85 olmalı, çünkü sadece courseId=1 ve 80-100 arasında 1 kayıt var
+            Assert.Equal(85, result.First().Value); //Expecting
+        } */
+
+
     }
 }

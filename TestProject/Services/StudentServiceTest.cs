@@ -126,5 +126,57 @@ namespace TestProject.Services
             var deletedStudent = await context.Students.FindAsync(studentDto.StudentId);
             Assert.Null(deletedStudent);
         }
+
+        [Fact]
+        public async Task GetAllStudentsWithPaginationAsync_ShouldReturnCorrectPage()
+        {
+            using var context = GetInMemoryDbContext();
+            var mapper = GetMapper();
+            var service = new StudentService(context, mapper);
+
+            // Arrange
+            for (int i = 1; i <= 50; i++)
+            {
+                context.Students.Add(new Student
+                {
+                    Name = $"Student {i}",
+                    Role = i % 2 == 0 ? "Kabin" : "Kokpit"
+                });
+            }
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await service.GetAllStudentsWithPaginationAsync(3, 15); // Third page, 15 items per page
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(15, result.Items.Count()); // Page size should be 15
+            Assert.Equal("Student 31", result.Items.First().Name); // First item of page 3
+        }
+
+        [Fact]
+        public async Task FilterStudentsAsync_ShouldReturnFilteredResults()
+        {
+            using var context = GetInMemoryDbContext();
+            var mapper = GetMapper();
+            var service = new StudentService(context, mapper);
+
+            // Arrange
+            context.Students.AddRange(
+                new Student { Name = "John Doe", Role = "Pilot" },
+                new Student { Name = "Jane Smith", Role = "Engineer" },
+                new Student { Name = "Jim Brown", Role = "Pilot" }
+            );
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await service.FilterStudentsAsync("John Doe","Pilot");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count()); // Two students with role "Pilot"
+            Assert.All(result, student => Assert.Equal("Pilot", student.Role));
+        }
+
     }
 }

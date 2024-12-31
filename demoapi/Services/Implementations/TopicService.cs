@@ -17,11 +17,45 @@ namespace demoapi.Services.Implementations
             _context = context;
             _mapper = mapper;
         }
+        public async Task<PaginationDto<TopicDto>> GetAllTopicsWithPaginationAsync(int page, int pageSize)
+        {
+            var query = _context.Topics.AsQueryable();
+
+            var totalCount = await query.CountAsync();
+            var topics = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PaginationDto<TopicDto>
+            {
+                Items = _mapper.Map<IEnumerable<TopicDto>>(topics),
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+        }
 
         public async Task<IEnumerable<TopicDto>> GetAllTopicsAsync()
         {
             var topics = await _context.Topics.Include(t => t.Course)
                 .ToListAsync();
+            return _mapper.Map<IEnumerable<TopicDto>>(topics);
+        }
+        public async Task<IEnumerable<TopicDto>> FilterTopicsAsync(string? topicName, int? courseId)
+        {
+            var query = _context.Topics.AsQueryable();
+
+            if (!string.IsNullOrEmpty(topicName))
+            {
+                query = query.Where(t => t.TopicName.Contains(topicName));
+            }
+            if (courseId.HasValue)
+            {
+                query = query.Where(t => t.CourseId == courseId.Value);
+            }
+
+            var topics = await query.ToListAsync();
             return _mapper.Map<IEnumerable<TopicDto>>(topics);
         }
 

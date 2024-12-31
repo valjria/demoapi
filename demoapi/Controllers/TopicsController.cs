@@ -14,6 +14,12 @@ namespace demoapi.Controllers
         {
             _topicService = topicService;
         }
+        [HttpGet("GetAllWithPagination")]
+        public async Task<IActionResult> GetAllTopicsWithPagination(int page = 1, int pageSize = 20)
+        {
+            var result = await _topicService.GetAllTopicsWithPaginationAsync(page, pageSize);
+            return Ok(result);
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetTopics()
@@ -29,6 +35,16 @@ namespace demoapi.Controllers
             if (topic == null) return NotFound();
 
             return Ok(topic);
+        }
+        [HttpGet("filter")]
+        public async Task<IActionResult> FilterTopics([FromQuery] string? topicName, [FromQuery] int? courseId)
+        {
+            var topics = await _topicService.FilterTopicsAsync(topicName, courseId);
+            if (!topics.Any())
+            {
+                return NotFound("No topics match the given criteria.");
+            }
+            return Ok(topics);
         }
 
         [HttpPost]

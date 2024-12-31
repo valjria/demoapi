@@ -14,11 +14,27 @@ namespace demoapi.Controllers
         {
             _gradeService = gradeService;
         }
+        [HttpGet("GetAllWithPagination")]
+        public async Task<IActionResult> GetAllGradesWithPagination(int page = 1, int pageSize = 20)
+        {
+            var result = await _gradeService.GetAllGradesWithPaginationAsync(page, pageSize);
+            return Ok(result);
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetGrades()
         {
             var grades = await _gradeService.GetAllGradesAsync();
+            return Ok(grades);
+        }
+        [HttpGet("filter")]
+        public async Task<IActionResult> FilterGrades([FromQuery] int? studentId, [FromQuery] int? courseId, [FromQuery] int? minValue, [FromQuery] int? maxValue)
+        {
+            var grades = await _gradeService.FilterGradesAsync(studentId, courseId, minValue, maxValue);
+            if (!grades.Any())
+            {
+                return NotFound("No grades match the given criteria.");
+            }
             return Ok(grades);
         }
 

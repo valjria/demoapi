@@ -1,4 +1,5 @@
 using demoapi.DTO;
+using demoapi.Services.Implementations;
 using demoapi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,14 +13,40 @@ public class CoursesController : ControllerBase
     {
         _courseService = courseService;
     }
+    //
+    [HttpGet("GetAllWithPagination")]
+    public async Task<IActionResult> GetAllGradesWithPagination(int page = 1, int pageSize = 20)
+    {
+        var result = await _courseService.GetAllCoursesWithPaginationAsync(page, pageSize);
+        return Ok(result);
+    }
 
+    /*[HttpGet]
+    public async Task<IActionResult> GetAllCourses([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        var result = await _courseService.GetAllCoursesWithPaginationAsync(page, pageSize);
+
+        if (!result.Items.Any())
+            return NotFound("No courses found.");
+
+        return Ok(result);
+    } */
     [HttpGet]
     public async Task<IActionResult> GetCourses()
     {
         var courses = await _courseService.GetAllCoursesAsync();
         return Ok(courses);
     }
-
+    [HttpGet("filter")]
+    public async Task<IActionResult> FilterCourses([FromQuery] string? courseName, [FromQuery] string? description)
+    {
+        var courses = await _courseService.FilterCoursesAsync(courseName, description);
+        if (!courses.Any())
+        {
+            return NotFound("No courses match the given criteria.");
+        }
+        return Ok(courses);
+    }
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCourse(int id)
     {

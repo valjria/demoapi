@@ -3,6 +3,7 @@ using demoapi.Data;
 using demoapi.DTO;
 using demoapi.Models;
 using demoapi.Services.Interfaces;
+using demoapi.Pagination;
 using Microsoft.EntityFrameworkCore;
 
 public class CourseService : ICourseService
@@ -15,13 +16,57 @@ public class CourseService : ICourseService
         _context = context;
         _mapper = mapper;
     }
-
-    public async Task<IEnumerable<CourseDto>> GetAllCoursesAsync()
+    public async Task<PaginationDto<CourseDto>> GetAllCoursesWithPaginationAsync(int page = 1, int pageSize = 20)
     {
-        var courses = await _context.Courses.ToListAsync();
-        return _mapper.Map<IEnumerable<CourseDto>>(courses); // Model'den DTO'ya dönüşüm
+        return await PaginationMethod.PaginateAsync<Course, CourseDto>(
+            _context.Courses.AsQueryable(), _mapper, page, pageSize
+        );
     }
+    /*public async Task<PaginationDto> GetAllCoursesWithPaginationAsync(int page = 1, int pageSize = 20)
+    {
+        var query = _context.Courses.AsQueryable();
 
+        // Toplam kayıt sayısını al
+        var totalCount = await query.CountAsync();
+
+        // İlgili sayfanın kayıtlarını al
+        var courses = await query
+            .Skip((page - 1) * pageSize) // Atlanacak kayıtlar
+            .Take(pageSize) // Sayfa başına gösterilecek kayıtlar
+            .ToListAsync();
+
+        // Paginated DTO döndür
+        return new PaginationDto
+        {
+            Items = _mapper.Map<IEnumerable<CourseDto>>(courses), // DTO dönüşümü
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+
+        };
+    } */
+
+     public async Task<IEnumerable<CourseDto>> GetAllCoursesAsync()
+     {
+         var courses = await _context.Courses.ToListAsync();
+         return _mapper.Map<IEnumerable<CourseDto>>(courses); // Model'den DTO'ya dönüşüm
+     }
+    public async Task<IEnumerable<CourseDto>> FilterCoursesAsync(string? courseName, string? description)
+    {
+        var query = _context.Courses.AsQueryable();
+
+        if (!string.IsNullOrEmpty(courseName))
+        {
+            query = query.Where(c => c.CourseName.Contains(courseName));
+        }
+        if (!string.IsNullOrEmpty(description))
+        {
+            query = query.Where(c => c.Description.Contains(description));
+        }
+
+        var courses = await query.ToListAsync();
+        return _mapper.Map<IEnumerable<CourseDto>>(courses);
+    }
     public async Task<CourseDto> GetCourseByIdAsync(int id)
     {
         var course = await _context.Courses.FindAsync(id);

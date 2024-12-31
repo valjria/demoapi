@@ -129,5 +129,55 @@ namespace TestProject.Services
             var deletedTopic = await context.Topics.FindAsync(topicDto.TopicId);
             Assert.Null(deletedTopic);
         }
+        [Fact]
+        public async Task GetAllTopicsWithPaginationAsync_ShouldReturnCorrectPage()
+        {
+            using var context = GetInMemoryDbContext();
+            var mapper = GetMapper();
+            var service = new TopicService(context, mapper);
+
+            // Arrange
+            for (int i = 1; i <= 40; i++)
+            {
+                context.Topics.Add(new Topic
+                {
+                    TopicName = $"Topic {i}",
+                    CourseId = 1
+                });
+            }
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await service.GetAllTopicsWithPaginationAsync(4, 10); // Fourth page, 10 items per page
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(10, result.Items.Count()); // Page size should be 10
+            Assert.Equal("Topic 31", result.Items.First().TopicName); // First item of page 4
+        }
+
+        [Fact]
+        public async Task FilterTopicsAsync_ShouldReturnFilteredResults()
+        {
+            using var context = GetInMemoryDbContext();
+            var mapper = GetMapper();
+            var service = new TopicService(context, mapper);
+
+            // Arrange
+            context.Topics.AddRange(
+                new Topic { TopicName = "Aviation Safety", CourseId = 1 },
+                new Topic { TopicName = "Cockpit Procedures", CourseId = 2 },
+                new Topic { TopicName = "Emergency Protocols", CourseId = 1 }
+            );
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await service.FilterTopicsAsync("Safety",1);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result); // Only one topic contains "Safety"
+            Assert.Equal("Aviation Safety", result.First().TopicName);
+        }
     }
 }

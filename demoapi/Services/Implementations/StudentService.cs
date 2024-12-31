@@ -16,6 +16,41 @@ public class StudentService : IStudentService
         _mapper = mapper;
     }
 
+    public async Task<PaginationDto<StudentDto>> GetAllStudentsWithPaginationAsync(int page, int pageSize)
+    {
+        var query = _context.Students.AsQueryable();
+
+        var totalCount = await query.CountAsync();
+        var students = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PaginationDto<StudentDto>
+        {
+            Items = _mapper.Map<IEnumerable<StudentDto>>(students),
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
+    public async Task<IEnumerable<StudentDto>> FilterStudentsAsync(string name, string role)
+    {
+        var query = _context.Students.AsQueryable();
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            query = query.Where(s => s.Name.Contains(name));
+        }
+        if (!string.IsNullOrEmpty(role))
+        {
+            query = query.Where(s => s.Role == role);
+        }
+
+        var students = await query.ToListAsync();
+        return _mapper.Map<IEnumerable<StudentDto>>(students);
+    }
+
     public async Task<IEnumerable<StudentDto>> GetAllStudentsAsync()
     {
         var students = await _context.Students.ToListAsync();

@@ -16,6 +16,25 @@ public class StudentsController : ControllerBase
     {
         _studentService = studentService;
     }
+    [HttpGet("GetAllWithPagination")]
+    public async Task<IActionResult> GetAllStudentsWithPagination(int page = 1, int pageSize = 20)
+    {
+        var result = await _studentService.GetAllStudentsWithPaginationAsync(page, pageSize);
+        return Ok(result);
+    }
+
+
+    [HttpGet("filter")]
+    public async Task<IActionResult> FilterStudents([FromQuery] string? name, [FromQuery] string? role)
+    {
+        var students = await _studentService.FilterStudentsAsync(name, role);
+        if (!students.Any())
+        {
+            return NotFound("No students found with the given criteria.");
+        }
+        return Ok(students);
+    }
+
 
     [HttpGet]
     public async Task<IActionResult> GetStudents()

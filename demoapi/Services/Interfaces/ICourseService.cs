@@ -9,5 +9,8 @@ namespace demoapi.Services.Interfaces
         Task<CourseDto> AddCourseAsync(CourseDto courseDto);
         Task<CourseDto> UpdateCourseAsync(CourseDto courseDto);
         Task<bool> DeleteCourseAsync(int id);
+        Task<IEnumerable<CourseDto>> FilterCoursesAsync(string? courseName, string? description);
+        Task<PaginationDto<CourseDto>> GetAllCoursesWithPaginationAsync(int page, int pageSize);
+        
     }
 }

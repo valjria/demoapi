@@ -17,10 +17,55 @@ namespace demoapi.Services.Implementations
             _context = context;
             _mapper = mapper;
         }
+        public async Task<PaginationDto<GradeDto>> GetAllGradesWithPaginationAsync(int page, int pageSize)
+        {
+            var query = _context.Grades
+                .Include(g => g.Student)
+                .Include(g => g.Course)
+                .AsQueryable();
+
+            var totalCount = await query.CountAsync();
+            var grades = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PaginationDto<GradeDto>
+            {
+                Items = _mapper.Map<IEnumerable<GradeDto>>(grades),
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+        }
 
         public async Task<IEnumerable<GradeDto>> GetAllGradesAsync()
         {
             var grades = await _context.Grades.Include(g => g.Student).Include(g => g.Course).ToListAsync();
+            return _mapper.Map<IEnumerable<GradeDto>>(grades);
+        }
+        public async Task<IEnumerable<GradeDto>> FilterGradesAsync(int? studentId, int? courseId, int? minValue, int? maxValue)
+        {
+            var query = _context.Grades.AsQueryable();
+
+            if (studentId.HasValue)
+            {
+                query = query.Where(g => g.StudentId == studentId.Value);
+            }
+            if (courseId.HasValue)
+            {
+                query = query.Where(g => g.CourseId == courseId.Value);
+            }
+            if (minValue.HasValue)
+            {
+                query = query.Where(g => g.Value >= minValue.Value);
+            }
+            if (maxValue.HasValue)
+            {
+                query = query.Where(g => g.Value <= maxValue.Value);
+            }
+
+            var grades = await query.ToListAsync();
             return _mapper.Map<IEnumerable<GradeDto>>(grades);
         }
 

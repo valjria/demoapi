@@ -22,8 +22,8 @@ namespace demoapi.MappingProfiles
             CreateMap<TopicDto, Topic>();
 
             //Student mapping
-            CreateMap<Student, StudentDto>();
-            CreateMap<StudentDto, Student>();
+            CreateMap<Student, StudentDto>().ReverseMap();
+            
 
             //Grade mapping
             CreateMap<Grade, GradeDto>()

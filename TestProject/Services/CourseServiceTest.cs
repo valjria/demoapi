@@ -116,5 +116,56 @@ namespace TestProject.Services
             var result = await service.AddCourseAsync(course);
             Assert.NotNull(result);
         }
+
+        [Fact]
+        public async Task GetAllCoursesWithPaginationAsync_ShouldReturnCorrectPage()
+        {
+            using var context = GetInMemoryDbContext();
+            var mapper = GetMapper();
+            var service = new CourseService(context, mapper);
+
+            // Arrange
+            for (int i = 1; i <= 50; i++)
+            {
+                context.Courses.Add(new Course
+                {
+                    CourseName = $"Course {i}",
+                    Description = $"Description {i}"
+                });
+            }
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await service.GetAllCoursesWithPaginationAsync(2, 10); // Second page, 10 items per page
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(10, result.Items.Count()); // Page size should be 10
+            Assert.Equal("Course 11", result.Items.First().CourseName); // First item of page 2
+        }
+
+        [Fact]
+        public async Task FilterCoursesAsync_ShouldReturnFilteredResults()
+        {
+            using var context = GetInMemoryDbContext();
+            var mapper = GetMapper();
+            var service = new CourseService(context, mapper);
+
+            // Arrange
+            context.Courses.AddRange(
+                new Course { CourseName = "Math 101", Description = "Basic Mathematics" },
+                new Course { CourseName = "Physics 101", Description = "Introduction to Physics" },
+                new Course { CourseName = "Math 201", Description = "Advanced Mathematics" }
+            );
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await service.FilterCoursesAsync("Math", null);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count()); // Two courses with "Math" in their name
+            Assert.All(result, course => Assert.Contains("Math", course.CourseName));
+        }
     }
 }
