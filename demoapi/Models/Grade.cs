@@ -1,26 +1,25 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using demoapi.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace demoapi.Models
+public class Grade
 {
-    public class Grade
-    {
-        [Key]
-        public int GradeId { get; set; }
+    [Key]
+    public int GradeId { get; set; }
 
-        [ForeignKey("Student")]
-        public int StudentId { get; set; }
-        [JsonIgnore]
+    [ForeignKey("Student")]
+    public int StudentId { get; set; }
 
-        public Student Student { get; set; }
+    [JsonIgnore]
+    public Student Student { get; set; }
 
-        [ForeignKey("Course")]
-        public int CourseId { get; set; }
-        [JsonIgnore]
-        public Course Course { get; set; }
+    [ForeignKey("Course")]
+    public int CourseId { get; set; }
 
-        [Range(0, 100)]
-        public int Value { get; set; }
-    }
+    [JsonIgnore]
+    public Course Course { get; set; }
+
+    [Range(0, 100)] // Not değeri sınırı
+    public int Value { get; set; }
 }

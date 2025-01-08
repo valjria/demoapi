@@ -1,17 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using demoapi.Models;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace demoapi.Models
+public class Topic
 {
-    public class Topic
-    {
-        public int TopicId { get; set; }
+    [Key]
+    public int TopicId { get; set; }
 
-        [Required]
-        public string TopicName { get; set; }
-        public int CourseId { get; set; }
+    [Required]
+    [Column(TypeName = "text")]
+    public string TopicName { get; set; }
 
-        [JsonIgnore]
-        public Course Course { get; set; }
-    }
+    [ForeignKey("Course")]
+    public int CourseId { get; set; }
+
+    [JsonIgnore]
+    public Course Course { get; set; }
 }

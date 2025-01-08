@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
-using demoapi.Data; // EducationDbContext için doðru namespace
-using AutoMapper; // AutoMapper için ekleme
+ï»¿using Microsoft.EntityFrameworkCore;
+using demoapi.Data; 
+using AutoMapper; 
 using System.Reflection;
 using demoapi.MappingProfiles;
 //using demoapi.Repository.Interfaces;
@@ -32,12 +32,11 @@ builder.Services.AddScoped<IReportService, ReportService>();
 
 
 // AutoMapper Entegrasyonu
-builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly()); // MappingProfiles için otomatik tarama
+builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly()); // MappingProfiles iï¿½in otomatik tarama
 // DbContext Entegrasyonu
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+  options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// CORS Politikasý
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -54,7 +53,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Development ortamý için Swagger yapýlandýrmasý
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
